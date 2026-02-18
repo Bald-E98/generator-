@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Anagram Generator</title>
+</head>
+<body>
+
+<button onclick="generate()">Generate Dictionary</button>
+<pre id="output"></pre>
+
+<script>
+
+async function loadDictionary() {
+    const response = await fetch("dictionary.txt");
+    const text = await response.text();
+    return text.split("\n").map(w => w.trim().toLowerCase());
+}
+
+function canFormWord(base, word) {
+    const baseCount = {};
+
+    for (let letter of base) {
+        baseCount[letter] = (baseCount[letter] || 0) + 1;
+    }
+
+    for (let letter of word) {
+        if (!baseCount[letter]) return false;
+        baseCount[letter]--;
+    }
+
+    return true;
+}
+
+function getValidWords(baseWord, dictionary) {
+    const results = {};
+
+    for (let word of dictionary) {
+        if (word.length >= 3 && word.length <= 12) {
+            if (canFormWord(baseWord.toLowerCase(), word)) {
+                if (!results[word.length]) {
+                    results[word.length] = [];
+                }
+                results[word.length].push(word);
+            }
+        }
+    }
+
+    return results;
+}
+
+async function generate() {
+
+    const baseWords = [
+    "ABROAD","PLANET","ABSOLUTE","ACADEMIC","ACTIVE","ADVENTURE",
+    "ALGORITHM","ANCIENT","ARTIST","ATMOSPHERE","AVAILABLE",
+    "BALANCE","BASKETBALL","BELIEVE","BIRTHDAY","BLANKET",
+    "BOTTLE","BOUNDARY","BRIGHT","BRILLIANCE","BROADCAST",
+    "CALENDAR","CAMERA","CAPTURE","CELEBRATE","CELEBRATION",
+    "CHALLENGE","CHAMPION","COMPUTER","CONNECTION","COUNTRY",
+    "CREATIVE","DANGER","DAUGHTER","DELIVERY","DICTIONARY",
+    "DIFFERENT","DISCONNECT","DISCOVERY","DISPLAY","DOLPHIN",
+    "EDUCATION","ELEGANT","ENERGY","ENVIRONMENT","EVERYTHING",
+    "EXCELLENT","EXPERIENCE","EXPLORER","FASHION","FESTIVAL",
+    "FINISH","FLUORESCENT","FREEDOM","FRIENDSHIP","GALACTIC",
+    "GARDEN","GENERATION","GLACIER","GRANDFATHER","HAPPINESS",
+    "HARVEST","HELICOPTER","HORIZON","INFINITE","INSTRUMENT",
+    "JOURNAL","JOURNEY","KEYBOARD","KINGDOM","LANTERN",
+    "LEMONADE","MAJESTIC","MOUNTAIN","MYSTERY","NAUTICAL",
+    "NOTEBOOK","OBSTACLE","PAINTING","PYRAMID","QUANTITY",
+    "RADIANT","SAPPHIRE","STARLIGHT","SUNSHINE","THUNDER",
+    "TREASURE","TWILIGHT","UMBRELLA","UNIVERSE","VACATION",
+    "VICTORY","WHISPER","WILDLIFE","YESTERDAY","MOUNTAIN","UNIVERSE","KITCHEN","ZODIAC"
+    ];
+
+    const dictionary = await loadDictionary();
+    const finalData = {};
+
+    for (let word of baseWords) {
+        finalData[word] = getValidWords(word, dictionary);
+    }
+
+    const json = JSON.stringify(finalData, null, 2);
+    document.getElementById("output").textContent = json;
+
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "anagramData.json";
+    link.click();
+}
+
+</script>
+
+</body>
+</html>
